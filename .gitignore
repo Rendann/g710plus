@@ -14,3 +14,10 @@ doc
 *.xcuserstate
 *xcuserdata*
 *.gem
+
+# Compiled binaries
+g710plus/g710plus/g710plus/g710plus
+g710plus
+
+# User-specific configuration files
+*.plist
