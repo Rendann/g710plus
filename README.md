@@ -1,8 +1,10 @@
-## Logitech G710+ without "Gaming Sotware"
+## Logitech G710+ without "Gaming Software"
 
 **TL;DR**
 
-Run this command line tool on **Mac OS** to use the **G1-6 keys** of the Logitech **G710+ gaming keyboard** without installing proprietary Software by Logitech.
+Run this command line tool on **macOS** to use the **G1-6 keys** of the Logitech **G710+ gaming keyboard** without installing proprietary Software by Logitech.
+
+**✅ Tested on macOS Sequoia 15.6** - Fully compatible with modern macOS security requirements.
 
 ### Introduction
 
@@ -16,52 +18,79 @@ Digging in deeper, you might find out that [someone reverse engineered](https://
 
 This is a simple command line application written in Swift that communicates directly via USB with your keyboard and does the following:
 
-* Whenever you plug in the keyboard, it will stop mirroring the numbers 1-6 when pressing the G-keys
-* When pressing the G-keys the **numpad** 1-6 keys are triggered instead.
-* When switching to M2, the numpad 7-9 *, - and / keys are trieggered instead
-* When switching to M3, the G keys don't do anything, which allows you to use the original Gaming Software on-the-fly
+* Disables G-key mirroring (G-keys normally mirror number keys 1-6)
+* Maps G-keys to F13-F18 function keys with hold/release functionality:
+  - G1 → F13, G2 → F14, G3 → F15, G4 → F16, G5 → F17, G6 → F18
+* Controls M-mode indicator lights on the keyboard (M1 light illuminates by default)
+* M1 key works, M2/M3 keys currently don't do anything
 
 In effect, this allows you to use the keyboard in games without any Logitech driver.
 
-### Try it out
+### Installation
 
-Start a Terminal and run this curl command to get the executable:
+#### Option 1: Build from Source (Recommended)
+
+1. Clone this repository:
+```bash
+git clone https://github.com/Rendann/g710plus.git
+cd g710plus/g710plus/g710plus
+```
+
+2. Build the executable:
+```bash
+swiftc -o g710plus Classes/*.swift -framework IOKit -framework CoreGraphics -framework Foundation
+```
+
+3. Install to a permanent location (e.g., `/usr/local/bin/`):
+```bash
+sudo cp g710plus /usr/local/bin/g710plus
+```
+
+**Note:** You can install it anywhere permanent - `/usr/local/bin/` is just a common choice.
+
+#### Option 2: Download Pre-built Binary
 
 ```bash
-sudo bash -c "curl -L https://github.com/halo/macosvpn/releases/download/0.1.0/g710plus > /usr/local/bin/g710plus"
+# Download and install (update URL when releases are available)
+sudo bash -c "curl -L https://github.com/halo/g710plus/releases/latest/download/g710plus > /usr/local/bin/g710plus"
 sudo chmod +x /usr/local/bin/g710plus
 ```
 
-Then just give it a try by running `g710plus --verbose`. The verbose flag is only for you to see some output on what is happening behind the scenes.
+### First Run
 
-If it works well for you, you can have your Mac to always keep the program running. To do this, create a file called `com.funkensturm.g710plus.plist` in the directory `~/Library/LaunchAgents` with the following content:
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>KeepAlive</key>
-	<true/>
-	<key>Label</key>
-	<string>com.funkensturm.g710plus</string>
-	<key>ProgramArguments</key>
-	<array>
-		<string>/usr/local/bin/g710plus</string>
-	</array>
-	<key>RunAtLoad</key>
-	<true/>
-</dict>
-</plist>
-```
-
-And run
+Test the utility manually first:
 
 ```bash
-launchctl load ~/Library/LaunchAgents/com.funkensturm.g710plus.plist
+/usr/local/bin/g710plus --verbose
 ```
 
-to start the daemon immeadiately. Even if you don't start it immediately, you could now log out and login and the application will run in the background.
+**Important:** On first run, macOS may prompt you to grant permissions for the utility to communicate with your keyboard.
+
+### Automatic Startup
+
+To have the utility start automatically when you log in:
+
+1. **Open System Settings** (or System Preferences on older macOS)
+2. **Go to General > Login Items** (or Users & Groups > Login Items)
+3. **Click the + button** to add a new login item
+4. **Navigate to and select:** `/usr/local/bin/g710plus`
+5. **Make sure it's enabled** (checkbox checked)
+
+**Alternative command-line method:**
+```bash
+osascript -e 'tell application "System Events" to make login item at end with properties {path:"/usr/local/bin/g710plus", hidden:false}'
+```
+
+**Why Login Items instead of Launch Agents?** Modern macOS security (especially Sequoia) restricts Launch Agents from accessing HID devices during boot. Login Items run with full user privileges and work reliably.
+
+### Troubleshooting
+
+**If G-keys output numbers instead of working:**
+- The utility is not running - check Login Items or run manually with `--verbose`
+
+**When working properly:**
+- M1 light should be illuminated
+- G1-G6 keys work as F13-F18 (not numbers 1-6)
 
 ### Limitations
 

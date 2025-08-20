@@ -29,58 +29,55 @@ xcodebuild -project g710plus/g710plus.xcodeproj -target g710plus build
 
 1. Build the executable (see above)
 2. Copy to system location: `sudo cp g710plus /usr/local/bin/g710plus`
-3. Test it works: `sudo /usr/local/bin/g710plus --verbose`
+3. Test it works: `/usr/local/bin/g710plus --verbose` (no sudo needed!)
 
-### Auto-Start on Boot (Launch Daemon)
+### Auto-Start on Login (Launch Agent)
 
-To have the utility start automatically when your Mac boots:
+To have the utility start automatically when you log in (recommended approach):
 
-1. Create a Launch Daemon plist file:
+1. Create a Launch Agent plist file:
 ```bash
-sudo tee /Library/LaunchDaemons/com.halo.g710plus.daemon.plist << 'EOF'
+tee ~/Library/LaunchAgents/com.halo.g710plus.plist << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Label</key>
-    <string>com.halo.g710plus.daemon</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>/usr/local/bin/g710plus</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <true/>
-    <key>StandardErrorPath</key>
-    <string>/var/log/g710plus.err</string>
-    <key>StandardOutPath</key>
-    <string>/var/log/g710plus.out</string>
+	<key>KeepAlive</key>
+	<true/>
+	<key>Label</key>
+	<string>com.halo.g710plus</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/usr/local/bin/g710plus</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
 </dict>
 </plist>
 EOF
 ```
 
-2. Load the daemon:
+2. Load the Launch Agent:
 ```bash
-sudo launchctl load /Library/LaunchDaemons/com.halo.g710plus.daemon.plist
+# Using the provided example file
+cp launch-agent-example.plist ~/Library/LaunchAgents/com.halo.g710plus.plist
+launchctl load ~/Library/LaunchAgents/com.halo.g710plus.plist
+
+# Or create manually (alternative method shown above)
 ```
 
-3. Manage the daemon:
+3. Manage the Launch Agent:
 ```bash
-# Stop: sudo launchctl unload /Library/LaunchDaemons/com.halo.g710plus.daemon.plist
-# Start: sudo launchctl load /Library/LaunchDaemons/com.halo.g710plus.daemon.plist
-# Remove: sudo rm /Library/LaunchDaemons/com.halo.g710plus.daemon.plist
+# Stop: launchctl unload ~/Library/LaunchAgents/com.halo.g710plus.plist
+# Start: launchctl load ~/Library/LaunchAgents/com.halo.g710plus.plist
+# Remove: rm ~/Library/LaunchAgents/com.halo.g710plus.plist
 ```
 
-### Check Logs
-```bash
-# View output logs
-cat /var/log/g710plus.out
-
-# View error logs  
-cat /var/log/g710plus.err
-```
+**Benefits of Launch Agent approach:**
+- No root access required (safer)
+- User-specific configuration
+- Simpler management (no sudo needed)
+- Starts when you log in (when you need the keyboard)
 
 ## Architecture
 
@@ -112,3 +109,4 @@ cat /var/log/g710plus.err
 
 ### USB Communication
 Uses IOKit HID framework for low-level USB communication. The keyboard requires specific control transfers to modify its behavior without proprietary drivers.
+- I never want to do a manual process to get this utility running. It needs to be automated.
