@@ -26,25 +26,8 @@
 import Foundation
 import AppKit
 
-// Disable stdout buffering to ensure logs are written immediately
-setbuf(stdout, nil)
-
-let timestamp = DateFormatter()
-timestamp.dateFormat = "yyyy-MM-dd HH:mm:ss"
-let buildNumber = "1001" // Increment manually: 1001 = IOHIDDeviceOpen fix
-print("[\(timestamp.string(from: Date()))] G710+ Utility Starting...")
-print("[\(timestamp.string(from: Date()))] Build: \(buildNumber)")
-print("[\(timestamp.string(from: Date()))] Command line arguments: \(CommandLine.arguments)")
-print("[\(timestamp.string(from: Date()))] Process ID: \(getpid())")
-fflush(stdout)
-
 let g710plus = G710plus.singleton
 let daemon = Thread(target: g710plus, selector: #selector(G710plus.run), object: nil)
 
-print("[\(timestamp.string(from: Date()))] Starting daemon thread...")
-fflush(stdout)
 daemon.start()
-
-print("[\(timestamp.string(from: Date()))] Starting main run loop...")
-fflush(stdout)
 RunLoop.current.run()
