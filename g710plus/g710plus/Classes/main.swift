@@ -27,7 +27,7 @@ import Foundation
 import AppKit
 
 let g710plus = G710plus.singleton
-var daemon = NSThread(target: g710plus, selector:"run", object: nil)
+let daemon = Thread(target: g710plus, selector: #selector(G710plus.run), object: nil)
 
 daemon.start()
-NSRunLoop.currentRunLoop().run()
+RunLoop.current.run()

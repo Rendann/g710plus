@@ -23,6 +23,7 @@
 */
 
 import Foundation
+import CoreGraphics
 
 // See /System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/Events.h
 
@@ -43,5 +44,13 @@ public enum KeyCode: CGKeyCode {
   case KeypadMultiply = 0x43
   case KeypadPlus = 0x45
   case KeypadDivide = 0x4B
+  
+  // Function keys for G-key mapping
+  case KeyF13 = 0x69
+  case KeyF14 = 0x6B
+  case KeyF15 = 0x71
+  case KeyF16 = 0x6A
+  case KeyF17 = 0x40
+  case KeyF18 = 0x4F
   
 }
