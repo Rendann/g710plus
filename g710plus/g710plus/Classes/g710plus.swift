@@ -34,6 +34,11 @@ class G710plus : NSObject {
 
   let reportSize = 16
   static let singleton = G710plus()
+  static let logTimestamp: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    return formatter
+  }()
   var device : IOHIDDevice? = nil
   var reportBuffer : UnsafeMutablePointer<UInt8>? = nil
   var currentM : UInt8 = 0
@@ -53,53 +58,6 @@ class G710plus : NSObject {
     }
   }
   
-  var G1AliasKey: KeyCode {
-    switch (self.currentM) {
-    case 1 : return KeyCode.Keypad1
-    case 2 : return KeyCode.Keypad7
-    default: return KeyCode.nullEvent
-    }
-  }
-
-  var G2AliasKey: KeyCode {
-    switch (self.currentM) {
-    case 1 : return KeyCode.Keypad2
-    case 2 : return KeyCode.Keypad8
-    default: return KeyCode.nullEvent
-    }
-  }
-
-  var G3AliasKey: KeyCode {
-    switch (self.currentM) {
-    case 1 : return KeyCode.Keypad3
-    case 2 : return KeyCode.Keypad9
-    default: return KeyCode.nullEvent
-    }
-  }
-
-  var G4AliasKey: KeyCode {
-    switch (self.currentM) {
-    case 1 : return KeyCode.Keypad4
-    case 2 : return KeyCode.KeypadMultiply
-    default: return KeyCode.nullEvent
-    }
-  }
-
-  var G5AliasKey: KeyCode {
-    switch (self.currentM) {
-    case 1 : return KeyCode.Keypad5
-    case 2 : return KeyCode.KeypadPlus
-    default: return KeyCode.nullEvent
-    }
-  }
-
-  var G6AliasKey: KeyCode {
-    switch (self.currentM) {
-    case 1 : return KeyCode.Keypad6
-    case 2 : return KeyCode.KeypadDivide
-    default: return KeyCode.nullEvent
-    }
-  }
 
   func setM(number: UInt8) {
     self.currentM = number
@@ -107,6 +65,9 @@ class G710plus : NSObject {
   }
   
   @objc func run() {
+    log(message: "G710+ Utility Starting...")
+    log(message: "Build: 1002")
+    log(message: "Command line arguments: \(CommandLine.arguments)")
     log(message: "Starting G710plus daemon...")
     
     let deviceMatch = [kIOHIDProductIDKey: productId, kIOHIDVendorIDKey: vendorId ]
@@ -187,11 +148,11 @@ class G710plus : NSObject {
   
   
   func controlTransfer(address: CFIndex, bytes: [UInt8]) {
-    guard let G710plus = device else { return }
+    guard let G710plus = device else { 
+      log(message: "Control transfer failed: device is nil")
+      return 
+    }
     let data = Data(bytes)
-    
-    // Ensure device is open
-    IOHIDDeviceOpen(G710plus, IOOptionBits(kIOHIDOptionsTypeNone))
     
     var result: IOReturn = kIOReturnError
     data.withUnsafeBytes { bytes in
@@ -246,42 +207,42 @@ class G710plus : NSObject {
     // See if one of the G-keys was pressed
     case 0x103:
       if (!g1IsPressed) {
-        print("You pressed G1 (down)")
+        log(message: "You pressed G1 (down)")
         g1IsPressed = true
         // Send Ctrl+Shift+F1 key down
         self.sendKeyEvent(keyCode: KeyCode.KeyF13, modifiers: [], keyDown: true)
       }
     case 0x203:
       if (!g2IsPressed) {
-        print("You pressed G2 (down)")
+        log(message: "You pressed G2 (down)")
         g2IsPressed = true
         // Send Ctrl+Shift+F2 key down
         self.sendKeyEvent(keyCode: KeyCode.KeyF14, modifiers: [], keyDown: true)
       }
     case 0x403:
       if (!g3IsPressed) {
-        print("You pressed G3 (down)")
+        log(message: "You pressed G3 (down)")
         g3IsPressed = true
         // Send Ctrl+Shift+F3 key down
         self.sendKeyEvent(keyCode: KeyCode.KeyF15, modifiers: [], keyDown: true)
       }
     case 0x803:
       if (!g4IsPressed) {
-        print("You pressed G4 (down)")
+        log(message: "You pressed G4 (down)")
         g4IsPressed = true
         // Send Ctrl+Shift+F4 key down
         self.sendKeyEvent(keyCode: KeyCode.KeyF16, modifiers: [], keyDown: true)
       }
     case 0x1003:
       if (!g5IsPressed) {
-        print("You pressed G5 (down)")
+        log(message: "You pressed G5 (down)")
         g5IsPressed = true
         // Send Ctrl+Shift+F5 key down
         self.sendKeyEvent(keyCode: KeyCode.KeyF17, modifiers: [], keyDown: true)
       }
     case 0x2003:
       if (!g6IsPressed) {
-        print("You pressed G6 (down)")
+        log(message: "You pressed G6 (down)")
         g6IsPressed = true
         // Send Ctrl+Shift+F6 key down
         self.sendKeyEvent(keyCode: KeyCode.KeyF18, modifiers: [], keyDown: true)
@@ -289,32 +250,32 @@ class G710plus : NSObject {
     case 0x3:
       // Handle release for any G-key that was pressed
       if (g1IsPressed) {
-        print("You released G1 (up)")
+        log(message: "You released G1 (up)")
         g1IsPressed = false
         self.sendKeyEvent(keyCode: KeyCode.KeyF13, modifiers: [], keyDown: false)
       }
       if (g2IsPressed) {
-        print("You released G2 (up)")
+        log(message: "You released G2 (up)")
         g2IsPressed = false
         self.sendKeyEvent(keyCode: KeyCode.KeyF14, modifiers: [], keyDown: false)
       }
       if (g3IsPressed) {
-        print("You released G3 (up)")
+        log(message: "You released G3 (up)")
         g3IsPressed = false
         self.sendKeyEvent(keyCode: KeyCode.KeyF15, modifiers: [], keyDown: false)
       }
       if (g4IsPressed) {
-        print("You released G4 (up)")
+        log(message: "You released G4 (up)")
         g4IsPressed = false
         self.sendKeyEvent(keyCode: KeyCode.KeyF16, modifiers: [], keyDown: false)
       }
       if (g5IsPressed) {
-        print("You released G5 (up)")
+        log(message: "You released G5 (up)")
         g5IsPressed = false
         self.sendKeyEvent(keyCode: KeyCode.KeyF17, modifiers: [], keyDown: false)
       }
       if (g6IsPressed) {
-        print("You released G6 (up)")
+        log(message: "You released G6 (up)")
         g6IsPressed = false
         self.sendKeyEvent(keyCode: KeyCode.KeyF18, modifiers: [], keyDown: false)
       }
@@ -337,9 +298,7 @@ class G710plus : NSObject {
   
   func log(message: String) {
     if CommandLine.arguments.contains("--verbose") {
-      let timestamp = DateFormatter()
-      timestamp.dateFormat = "yyyy-MM-dd HH:mm:ss"
-      print("[\(timestamp.string(from: Date()))] \(message)")
+      print("[\(G710plus.logTimestamp.string(from: Date()))] \(message)")
       fflush(stdout)
     }
   }
