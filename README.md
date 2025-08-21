@@ -28,7 +28,33 @@ In effect, this allows you to use the keyboard in games without any Logitech dri
 
 ### Installation
 
-#### Option 1: Build from Source (Recommended)
+#### Option 1: macOS App Bundle (Recommended)
+
+Build and install as a proper macOS app that runs silently in the background:
+
+1. Clone this repository:
+```bash
+git clone https://github.com/Rendann/g710plus.git
+cd g710plus
+```
+
+2. Build the app bundle:
+```bash
+./build-app.sh
+```
+
+3. Install to Applications folder:
+```bash
+cp -r g710plus/g710plus/G710Plus.app /Applications/
+```
+
+**Advantages:**
+- Runs silently without terminal windows
+- Proper macOS app bundle with code signing
+- Integrates cleanly with Login Items
+- Unified logging via Console.app
+
+#### Option 2: Command-Line Executable (Alternative)
 
 1. Clone this repository:
 ```bash
@@ -46,51 +72,91 @@ swiftc -o g710plus Classes/*.swift -framework IOKit -framework CoreGraphics -fra
 sudo cp g710plus /usr/local/bin/g710plus
 ```
 
-**Note:** You can install it anywhere permanent - `/usr/local/bin/` is just a common choice.
+**Note:** Command-line version shows terminal window when used as login item.
 
-#### Option 2: Download Pre-built Binary
+### First Run and Permissions
 
+#### Testing the App Bundle
+Open the app to test functionality:
 ```bash
-# Download and install pre-built binary
-sudo bash -c "curl -L https://github.com/Rendann/g710plus/releases/latest/download/g710plus > /usr/local/bin/g710plus"
-sudo chmod +x /usr/local/bin/g710plus
+open /Applications/G710Plus.app
 ```
 
-### First Run
-
-Test the utility manually first:
-
+#### Testing the Command-Line Version
 ```bash
 /usr/local/bin/g710plus --verbose
 ```
 
-**Important:** On first run, macOS may prompt you to grant permissions for the utility to communicate with your keyboard.
+#### Required Permissions (TCC)
+On first run, macOS will prompt for security permissions:
+
+1. **Input Monitoring Permission**: Required to detect G-key presses
+   - Location: System Settings > Privacy & Security > Input Monitoring
+   - Enable: G710Plus (for app bundle) or g710plus (for command-line)
+
+2. **Accessibility Permission**: May be prompted if needed for key injection
+   - Location: System Settings > Privacy & Security > Accessibility
+   - Enable: G710Plus when prompted
+
+**Important:** Restart the app after granting permissions for them to take effect.
 
 ### Automatic Startup
 
-To have the utility start automatically when you log in:
+#### Option 1: App Bundle (Recommended)
+Add G710Plus.app to Login Items for clean startup without terminal windows:
 
 1. **Open System Settings** (or System Preferences on older macOS)
 2. **Go to General > Login Items** (or Users & Groups > Login Items)
 3. **Click the + button** to add a new login item
-4. **Navigate to and select:** `/usr/local/bin/g710plus`
+4. **Navigate to and select:** `/Applications/G710Plus.app`
 5. **Make sure it's enabled** (checkbox checked)
+
+The app will start automatically and run silently in the background.
+
+#### Option 2: Command-Line Version
+For the command-line executable:
+
+1. Follow the same steps as above but select: `/usr/local/bin/g710plus`
+2. **Note:** This will show a terminal window on login
 
 **Alternative command-line method:**
 ```bash
-osascript -e 'tell application "System Events" to make login item at end with properties {path:"/usr/local/bin/g710plus", hidden:false}'
+osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/G710Plus.app", hidden:false}'
 ```
 
-**Why Login Items instead of Launch Agents?** Modern macOS security (especially Sequoia) restricts Launch Agents from accessing HID devices during boot. Login Items run with full user privileges and work reliably.
+**Why Login Items?** Modern macOS security restricts Launch Agents from accessing HID devices during boot. Login Items run with full user privileges and work reliably.
 
 ### Troubleshooting
 
-**If G-keys output numbers instead of working:**
-- The utility is not running - check Login Items or run manually with `--verbose`
+#### G-keys Output Numbers Instead of Function Keys
+- **Check if utility is running**: Look for G710Plus in Activity Monitor
+- **Verify TCC permissions**: Input Monitoring must be enabled in System Settings
+- **Restart after permission grant**: Quit and relaunch the app
+- **Test manually**: `open /Applications/G710Plus.app` (for app bundle) or `/usr/local/bin/g710plus --verbose` (for command-line)
 
-**When working properly:**
-- M1 light should be illuminated
-- G1-G6 keys work as F13-F18 (not numbers 1-6)
+#### No G-key Response At All
+- **Check Login Items**: Ensure G710Plus.app is in Login Items and enabled
+- **Verify TCC permissions**: Both Input Monitoring and Accessibility (if prompted) must be granted
+- **Rebuild and re-authorize**: Code signing issues may require TCC re-authorization
+
+#### Viewing Diagnostic Logs
+**Console.app Method:**
+1. Open Console.app (Applications > Utilities)
+2. Filter by process: "G710Plus" or "g710plus"
+3. Use predicate: `subsystem == "com.halo.g710plus"`
+
+**Command Line Method:**
+```bash
+log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug
+```
+
+**Note:** Debug logs may show "Control transfer failed: -536850432" during startup. This is expected and does not affect functionality.
+
+#### When Working Properly
+- M1 light should be illuminated on the keyboard
+- G1-G6 keys trigger F13-F18 (not numbers 1-6)
+- No terminal windows visible (for app bundle)
+- Logs show "G710+ keyboard connected" in Console.app
 
 ### Limitations
 

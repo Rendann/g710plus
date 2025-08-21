@@ -9,12 +9,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build G710Plus.app bundle (runs silently without terminal window)
 ./build-app.sh
 
+# Build debug version with verbose logging enabled
+./build-app-debug.sh
+
 # Install to Applications folder
 cp -r g710plus/g710plus/G710Plus.app /Applications/
 
 # Add to Login Items in System Preferences > Users & Groups > Login Items
 # The app will start automatically on login without showing terminal windows
 ```
+
+**Build Script Features:**
+- Automatic code signing with Apple Development certificate
+- Creates proper app bundle structure with Info.plist
+- Standard build: Info-level logging only
+- Debug build: Enables verbose debug logging via `VERBOSE_LOGGING` flag
 
 ### Building Command-Line Executable (Alternative)
 ```bash
@@ -90,6 +99,92 @@ The keyboard sends specific 32-bit codes for different events:
 - **Advantage**: Traditional Unix-style executable
 - **Best for**: Development, testing, or integration with other tools
 - **Note**: Shows terminal window when used as login item
+
+## Code Signing
+
+The app bundle requires proper code signing to avoid TCC permission re-authorization after each rebuild. The `build-app.sh` script automatically handles this:
+
+### Automatic Code Signing
+- Build script detects your Apple Development certificate via `security find-identity`
+- Signs the app bundle with `codesign --force --sign "$SIGNING_IDENTITY" "G710Plus.app"`
+- Prevents TCC from treating each rebuild as a "new" application requiring re-authorization
+
+### Setting Up Development Certificate
+If you don't have an Apple Development certificate:
+1. Open Xcode and sign in with your Apple ID (Xcode > Preferences > Accounts)
+2. Select your team and ensure "Apple Development" certificate is available
+3. Alternatively: enable "Automatically manage signing" in the Xcode project settings
+
+### Troubleshooting Code Signing
+- **Warning "No development certificate found"**: Install Xcode and sign in with Apple ID
+- **TCC permissions reset after rebuild**: Code signing failed or different certificate used
+- **Verify signing**: `codesign -dv --verbose=4 G710Plus.app`
+
+## Logging System
+
+The utility uses macOS unified logging (`os_log`) for robust logging that integrates with Console.app:
+
+### Log Levels
+- **Info Level**: Essential operational messages (device connection, errors)
+- **Debug Level**: Detailed diagnostic information (only when `--verbose` flag is used)
+
+### Viewing Logs
+**Console.app Method:**
+1. Open Console.app (Applications > Utilities)
+2. Filter by process name: "g710plus" or "G710Plus"
+3. Use predicate: `subsystem == "com.halo.g710plus"`
+
+**Command Line Method:**
+```bash
+# View all g710plus logs
+log show --predicate 'subsystem == "com.halo.g710plus"' --info --debug --last 1h
+
+# Follow live logs
+log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug
+```
+
+### Build-Time Logging Configuration
+- **Standard Build**: Info-level messages only
+- **Debug Build** (`./build-app-debug.sh`): Enables verbose debug logging via `VERBOSE_LOGGING` compilation flag
+
+### Logging Implementation
+The utility implements two main logging functions:
+- `logInfo(_:)`: Always logs important operational messages
+- `logDebug(_:)`: Conditional logging based on `VERBOSE_LOGGING` flag
+
+**Expected Messages:** Control transfer failures (-536850432) during device connection are normal and do not impact G-key functionality.
+
+## TCC Permissions
+
+macOS Transparency, Consent, and Control (TCC) system requires explicit permission grants for HID device access:
+
+### Required Permissions
+**Input Monitoring**: Required for detecting G-key presses
+- Location: System Settings > Privacy & Security > Input Monitoring
+- Enable: G710Plus.app (or g710plus if using command-line version)
+
+**Accessibility** (if prompted): May be required for virtual key event injection
+- Location: System Settings > Privacy & Security > Accessibility  
+- Enable: G710Plus.app when prompted
+
+### Permission Process
+1. **First Launch**: macOS prompts for Input Monitoring permission
+2. **Grant Permission**: Check the box next to G710Plus in System Settings
+3. **Restart App**: Quit and relaunch for permissions to take effect
+4. **Additional Prompts**: Grant Accessibility permission if requested
+
+### Permission Descriptions (Info.plist)
+The app bundle includes user-friendly permission descriptions:
+```xml
+<key>NSInputMonitoringUsageDescription</key>
+<string>G710Plus needs to monitor keyboard input to detect G-key presses on your Logitech G710+ keyboard and map them to function keys.</string>
+```
+
+### Troubleshooting TCC Issues
+- **G-keys output numbers instead of F13-F18**: Input Monitoring permission not granted
+- **No G-key response at all**: App not running or HID device access denied
+- **Permissions reset after rebuild**: Code signing issue (see Code Signing section)
+- **Manual permission reset**: Remove app from TCC settings, rebuild, re-authorize
 
 ## Development Notes
 

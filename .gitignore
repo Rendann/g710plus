@@ -17,7 +17,11 @@ doc
 
 # Compiled binaries
 g710plus/g710plus/g710plus/g710plus
-g710plus
+g710plus/g710plus/g710plus
 
-# User-specific configuration files
+# Built app bundle (ignore)
+g710plus/g710plus/G710Plus.app/
+
+# User-specific configuration files (but allow source AppBundle)
 *.plist
+!g710plus/g710plus/AppBundle/Info.plist

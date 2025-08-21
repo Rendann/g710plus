@@ -101,6 +101,8 @@
 				TargetAttributes = {
 					C2D8A18D1C7628CD00336520 = {
 						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = V6D7S5K2DC;
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -109,6 +111,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = C2D8A1851C7628CD00336520;
@@ -218,7 +221,11 @@
 		C2D8A1961C7628CD00336520 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V6D7S5K2DC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -226,7 +233,11 @@
 		C2D8A1971C7628CD00336520 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V6D7S5K2DC;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -250,6 +261,7 @@
 				C2D8A1971C7628CD00336520 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
