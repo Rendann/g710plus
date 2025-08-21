@@ -51,8 +51,8 @@ sudo cp g710plus /usr/local/bin/g710plus
 #### Option 2: Download Pre-built Binary
 
 ```bash
-# Download and install (update URL when releases are available)
-sudo bash -c "curl -L https://github.com/halo/g710plus/releases/latest/download/g710plus > /usr/local/bin/g710plus"
+# Download and install pre-built binary
+sudo bash -c "curl -L https://github.com/Rendann/g710plus/releases/latest/download/g710plus > /usr/local/bin/g710plus"
 sudo chmod +x /usr/local/bin/g710plus
 ```
 

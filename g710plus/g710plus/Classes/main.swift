@@ -26,6 +26,27 @@
 import Foundation
 import AppKit
 
+let G710PlusVersion = "0.2.1"
+let G710PlusBuild = "1003"
+
+// Handle command line arguments
+if CommandLine.arguments.count > 1 {
+    let argument = CommandLine.arguments[1]
+    
+    if argument == "--version" || argument == "-v" {
+        print("g710plus version \(G710PlusVersion) build \(G710PlusBuild)")
+        exit(0)
+    } else if argument == "--help" || argument == "-h" {
+        print("g710plus version \(G710PlusVersion) build \(G710PlusBuild)")
+        print("Usage: g710plus [options]")
+        print("Options:")
+        print("  --version, -v    Show version information")
+        print("  --verbose        Enable verbose logging")
+        print("  --help, -h       Show this help message")
+        exit(0)
+    }
+}
+
 let g710plus = G710plus.singleton
 let daemon = Thread(target: g710plus, selector: #selector(G710plus.run), object: nil)
 

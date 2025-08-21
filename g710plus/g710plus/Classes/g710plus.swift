@@ -29,6 +29,7 @@ import CoreGraphics
 
 class G710plus : NSObject {
   
+  static let version = G710PlusVersion
   let vendorId  = 0x046d  // Logitech
   let productId = 0xc24d  // G710+ Keyboard
 
@@ -66,7 +67,7 @@ class G710plus : NSObject {
   
   @objc func run() {
     log(message: "G710+ Utility Starting...")
-    log(message: "Build: 1002")
+    log(message: "Build: \(G710PlusBuild)")
     log(message: "Command line arguments: \(CommandLine.arguments)")
     log(message: "Starting G710plus daemon...")
     
