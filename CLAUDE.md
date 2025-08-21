@@ -71,10 +71,14 @@ The utility sends specific control transfers to configure the keyboard:
 - **Device Management**: Handles IOHIDManager setup, device matching, and connection callbacks
 - **Event Processing**: Processes raw HID reports and maintains key state
 - **Control Operations**: Sends USB control transfers for keyboard configuration
-- **Key Mapping**: Maps G1→F13, G2→F14, G3→F15, G4→F16, G5→F17, G6→F18
+- **Key Mapping**: 
+  - G1 → Control+Command+Shift+L
+  - G2 → Control+Command+Shift+K
+  - G3 → Control+Command+Shift+J
+  - G4 → F16, G5 → F17, G6 → F18
 
 ### `KeyCode` Enum
-- Defines CGKeyCode values for F13-F18 function keys used for G-key mapping
+- Defines CGKeyCode values for F13-F18 function keys and L/K/J letter keys used for G-key mapping
 - Based on macOS Carbon framework key codes
 
 ### `main.swift`

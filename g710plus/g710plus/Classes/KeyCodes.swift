@@ -53,4 +53,9 @@ public enum KeyCode: CGKeyCode {
   case KeyF17 = 0x40
   case KeyF18 = 0x4F
   
+  // Letter keys for G-key combinations
+  case KeyL = 0x25
+  case KeyK = 0x28
+  case KeyJ = 0x26
+  
 }

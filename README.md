@@ -19,8 +19,11 @@ Digging in deeper, you might find out that [someone reverse engineered](https://
 This is a simple command line application written in Swift that communicates directly via USB with your keyboard and does the following:
 
 * Disables G-key mirroring (G-keys normally mirror number keys 1-6)
-* Maps G-keys to F13-F18 function keys with hold/release functionality:
-  - G1 → F13, G2 → F14, G3 → F15, G4 → F16, G5 → F17, G6 → F18
+* Maps G-keys to system shortcuts and function keys with hold/release functionality:
+  - G1 → Control+Command+Shift+L
+  - G2 → Control+Command+Shift+K  
+  - G3 → Control+Command+Shift+J
+  - G4 → F16, G5 → F17, G6 → F18
 * Controls M-mode indicator lights on the keyboard (M1 light illuminates by default)
 * M1 key works, M2/M3 keys currently don't do anything
 
@@ -154,7 +157,8 @@ log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug
 
 #### When Working Properly
 - M1 light should be illuminated on the keyboard
-- G1-G6 keys trigger F13-F18 (not numbers 1-6)
+- G1-G3 keys trigger Control+Command+Shift+L/K/J combinations (not numbers 1-3)
+- G4-G6 keys trigger F16-F18 function keys (not numbers 4-6)
 - No terminal windows visible (for app bundle)
 - Logs show "G710+ keyboard connected" in Console.app
 

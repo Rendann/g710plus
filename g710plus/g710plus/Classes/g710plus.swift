@@ -229,22 +229,22 @@ class G710plus : NSObject {
       if (!g1IsPressed) {
         logDebug("You pressed G1 (down)")
         g1IsPressed = true
-        // Send Ctrl+Shift+F1 key down
-        self.sendKeyEvent(keyCode: KeyCode.KeyF13, modifiers: [], keyDown: true)
+        // Send Control+Command+Shift+L key down
+        self.sendKeyEvent(keyCode: KeyCode.KeyL, modifiers: [.maskControl, .maskCommand, .maskShift], keyDown: true)
       }
     case 0x203:
       if (!g2IsPressed) {
         logDebug("You pressed G2 (down)")
         g2IsPressed = true
-        // Send Ctrl+Shift+F2 key down
-        self.sendKeyEvent(keyCode: KeyCode.KeyF14, modifiers: [], keyDown: true)
+        // Send Control+Command+Shift+K key down
+        self.sendKeyEvent(keyCode: KeyCode.KeyK, modifiers: [.maskControl, .maskCommand, .maskShift], keyDown: true)
       }
     case 0x403:
       if (!g3IsPressed) {
         logDebug("You pressed G3 (down)")
         g3IsPressed = true
-        // Send Ctrl+Shift+F3 key down
-        self.sendKeyEvent(keyCode: KeyCode.KeyF15, modifiers: [], keyDown: true)
+        // Send Control+Command+Shift+J key down
+        self.sendKeyEvent(keyCode: KeyCode.KeyJ, modifiers: [.maskControl, .maskCommand, .maskShift], keyDown: true)
       }
     case 0x803:
       if (!g4IsPressed) {
@@ -272,17 +272,17 @@ class G710plus : NSObject {
       if (g1IsPressed) {
         logDebug("You released G1 (up)")
         g1IsPressed = false
-        self.sendKeyEvent(keyCode: KeyCode.KeyF13, modifiers: [], keyDown: false)
+        self.sendKeyEvent(keyCode: KeyCode.KeyL, modifiers: [.maskControl, .maskCommand, .maskShift], keyDown: false)
       }
       if (g2IsPressed) {
         logDebug("You released G2 (up)")
         g2IsPressed = false
-        self.sendKeyEvent(keyCode: KeyCode.KeyF14, modifiers: [], keyDown: false)
+        self.sendKeyEvent(keyCode: KeyCode.KeyK, modifiers: [.maskControl, .maskCommand, .maskShift], keyDown: false)
       }
       if (g3IsPressed) {
         logDebug("You released G3 (up)")
         g3IsPressed = false
-        self.sendKeyEvent(keyCode: KeyCode.KeyF15, modifiers: [], keyDown: false)
+        self.sendKeyEvent(keyCode: KeyCode.KeyJ, modifiers: [.maskControl, .maskCommand, .maskShift], keyDown: false)
       }
       if (g4IsPressed) {
         logDebug("You released G4 (up)")
