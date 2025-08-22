@@ -23,7 +23,9 @@ This is a simple command line application written in Swift that communicates dir
   - G1 → Control+Command+Shift+L
   - G2 → Control+Command+Shift+K  
   - G3 → Control+Command+Shift+J
-  - G4 → F16, G5 → F17, G6 → F18
+  - G4 → F6 tap → F18 hold (key sequence with holding behavior)
+  - G5 → F17, G6 → F18
+* Supports advanced features: key sequences, key holding, and post-release actions
 * Controls M-mode indicator lights on the keyboard (M1 light illuminates by default)
 * M1 key works, M2/M3 keys currently don't do anything
 
@@ -105,18 +107,113 @@ On first run, macOS will prompt for security permissions:
 
 ### Configuration
 
-G-key shortcuts are fully customizable via JSON configuration files. Create `~/.g710plus-config.json` to override defaults:
+G-key shortcuts are fully customizable via JSON configuration files using the new array-based format that supports both single keys and multi-key sequences.
+
+#### Configuration File Priority (checked in order):
+1. **Custom path**: `--config /path/to/config.json` command line argument
+2. **App bundle**: `G710Plus.app/Contents/Resources/g710plus-config.json` 
+3. **Home directory**: `~/.g710plus-config.json`
+4. **Built-in defaults**: Hardcoded fallback configuration
+
+#### Basic Configuration Format
+
+Create `~/.g710plus-config.json` to override defaults:
 
 ```json
 {
-  "g1": {"key": "k", "modifiers": []},
-  "g2": {"key": "k", "modifiers": ["shift"]},
-  "g3": {"key": "Space", "modifiers": ["command"]},
-  "g4": {"key": "F13", "modifiers": []},
-  "g5": {"key": "Enter", "modifiers": []},
-  "g6": {"key": "Escape", "modifiers": []}
+  "g1": {
+    "keys": [
+      {"key": "k", "modifiers": []}
+    ]
+  },
+  "g2": {
+    "keys": [
+      {"key": "k", "modifiers": ["shift"]}
+    ]
+  },
+  "g3": {
+    "keys": [
+      {"key": "Space", "modifiers": ["command"]}
+    ]
+  },
+  "g4": {
+    "keys": [
+      {"key": "F13", "modifiers": []}
+    ]
+  },
+  "g5": {
+    "keys": [
+      {"key": "Enter", "modifiers": []}
+    ]
+  },
+  "g6": {
+    "keys": [
+      {"key": "Escape", "modifiers": []}
+    ]
+  }
 }
 ```
+
+#### Key Sequences (Multi-Key Macros)
+
+Execute multiple keystrokes in sequence with proper timing:
+
+```json
+{
+  "g2": {
+    "keys": [
+      {"key": "h", "modifiers": ["command"]},
+      {"key": "i", "modifiers": ["shift"]}
+    ]
+  },
+  "g3": {
+    "keys": [
+      {"key": "Escape", "modifiers": []},
+      {"key": "Tab", "modifiers": []},
+      {"key": "Enter", "modifiers": []}
+    ]
+  }
+}
+```
+
+**Sequence Behavior:**
+- **Intermediate keys**: Tap briefly (10ms press + release) with 50ms delay between steps
+- **Final key**: Holds down until G-key is released (enables modifier keys, etc.)
+- **Timing**: Non-blocking async execution prevents UI freezing
+
+#### Post-Release Sequences (onRelease)
+
+Execute additional keystrokes after the G-key is released:
+
+```json
+{
+  "g4": {
+    "keys": [
+      {"key": "F6", "modifiers": []},
+      {"key": "F18", "modifiers": []}
+    ],
+    "onRelease": [
+      {"key": "F6", "modifiers": []}
+    ]
+  },
+  "g6": {
+    "keys": [
+      {"key": "Space", "modifiers": ["command"]}
+    ],
+    "onRelease": [
+      {"key": "Escape", "modifiers": []},
+      {"key": "Tab", "modifiers": []}
+    ]
+  }
+}
+```
+
+**onRelease Behavior:**
+- Executes after held key from main sequence is released
+- All onRelease keys are tapped (no holding since G-key is already released)
+- Perfect for complex macros requiring different press/release actions
+
+#### Supported Keys and Modifiers
 
 **Key Examples:**
 - Letters: `"k"` (lowercase only - use `["shift"]` modifier for uppercase)
@@ -131,15 +228,80 @@ G-key shortcuts are fully customizable via JSON configuration files. Create `~/.
 - `"shift"` - Shift key
 - `"option"` or `"alt"` - Option/Alt key
 
-**Modifier Examples:**
+**Examples:**
 - `{"key": "k", "modifiers": []}` → k
 - `{"key": "k", "modifiers": ["shift"]}` → K
 - `{"key": "k", "modifiers": ["command"]}` → ⌘K
 - `{"key": "k", "modifiers": ["control", "shift"]}` → ⌃⇧K
 
-**Note:** Uppercase letters (A-Z) are not allowed in key names. Use lowercase letters with explicit `"shift"` modifier instead.
+#### Real-World Configuration Examples
 
-Restart the app after changing configuration.
+**Gaming Setup:**
+```json
+{
+  "g1": {
+    "keys": [{"key": "1", "modifiers": []}]
+  },
+  "g2": {
+    "keys": [{"key": "2", "modifiers": []}]
+  },
+  "g3": {
+    "keys": [
+      {"key": "Tab", "modifiers": []},
+      {"key": "Space", "modifiers": []}
+    ]
+  }
+}
+```
+
+**Development Workflow:**
+```json
+{
+  "g1": {
+    "keys": [{"key": "s", "modifiers": ["command"]}]
+  },
+  "g2": {
+    "keys": [
+      {"key": "k", "modifiers": ["command"]},
+      {"key": "u", "modifiers": ["command"]}
+    ]
+  },
+  "g3": {
+    "keys": [{"key": "`", "modifiers": ["command"]}],
+    "onRelease": [
+      {"key": "c", "modifiers": ["command"]},
+      {"key": "Enter", "modifiers": []}
+    ]
+  }
+}
+```
+
+**Media Control:**
+```json
+{
+  "g4": {
+    "keys": [
+      {"key": "Space", "modifiers": []}
+    ]
+  },
+  "g5": {
+    "keys": [
+      {"key": "ArrowLeft", "modifiers": []}
+    ]
+  },
+  "g6": {
+    "keys": [
+      {"key": "ArrowRight", "modifiers": []}
+    ]
+  }
+}
+```
+
+**Important Notes:**
+- Uppercase letters (A-Z) are not allowed in key names. Use lowercase letters with explicit `"shift"` modifier instead.
+- Configuration changes require app restart to take effect.
+- Use `--config /path/to/config.json` argument for custom configuration file locations.
+- Example configurations are available in the repository: `example-sequence-config.json`
 
 ### Automatic Startup
 
@@ -195,7 +357,7 @@ log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug
 
 #### When Working Properly
 - M1 light should be illuminated on the keyboard
-- G-keys trigger configured shortcuts (default: G1-G3→Control+Command+Shift+L/K/J, G4-G6→F16-F18)
+- G-keys trigger configured shortcuts (default: G1-G3→Control+Command+Shift+L/K/J, G4→F6 tap+F18 hold, G5→F17, G6→F18)
 - Keys send configured outputs instead of numbers 1-6
 - No terminal windows visible (for app bundle)
 - Logs show "G710+ keyboard connected" in Console.app
