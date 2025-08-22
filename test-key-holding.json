@@ -1,0 +1,37 @@
+{
+  "g1": {
+    "keys": [
+      {"key": "a", "modifiers": []}
+    ]
+  },
+  "g2": {
+    "keys": [
+      {"key": "b", "modifiers": []},
+      {"key": "c", "modifiers": []}
+    ]
+  },
+  "g3": {
+    "keys": [
+      {"key": "d", "modifiers": []},
+      {"key": "e", "modifiers": []},
+      {"key": "f", "modifiers": []}
+    ]
+  },
+  "g4": {
+    "keys": [
+      {"key": "F6", "modifiers": []},
+      {"key": "F18", "modifiers": []}
+    ]
+  },
+  "g5": {
+    "keys": [
+      {"key": "Space", "modifiers": []}
+    ]
+  },
+  "g6": {
+    "keys": [
+      {"key": "Escape", "modifiers": []},
+      {"key": "Enter", "modifiers": []}
+    ]
+  }
+}

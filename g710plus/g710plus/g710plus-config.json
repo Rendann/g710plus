@@ -1,0 +1,33 @@
+{
+  "g1": {
+    "keys": [
+      {"key": "l", "modifiers": ["control", "command", "shift"]}
+    ]
+  },
+  "g2": {
+    "keys": [
+      {"key": "k", "modifiers": ["control", "command", "shift"]}
+    ]
+  },
+  "g3": {
+    "keys": [
+      {"key": "j", "modifiers": ["control", "command", "shift"]}
+    ]
+  },
+  "g4": {
+    "keys": [
+      {"key": "F6", "modifiers": []},
+      {"key": "F18", "modifiers": []}
+    ]
+  },
+  "g5": {
+    "keys": [
+      {"key": "F17", "modifiers": []}
+    ]
+  },
+  "g6": {
+    "keys": [
+      {"key": "F18", "modifiers": []}
+    ]
+  }
+}

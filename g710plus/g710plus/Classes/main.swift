@@ -40,14 +40,26 @@ if CommandLine.arguments.count > 1 {
         print("g710plus version \(G710PlusVersion) build \(G710PlusBuild)")
         print("Usage: g710plus [options]")
         print("Options:")
-        print("  --version, -v    Show version information")
-        print("  --verbose        Enable verbose logging")
-        print("  --help, -h       Show this help message")
+        print("  --version, -v              Show version information")
+        print("  --verbose                  Enable verbose logging")
+        print("  --config <path>            Use custom configuration file")
+        print("  --help, -h                 Show this help message")
+        print("")
+        print("Configuration:")
+        print("  Config file paths (in order of priority):")
+        print("  1. --config argument path")
+        print("  2. Bundle: g710plus-config.json")
+        print("  3. Home: ~/.g710plus-config.json")
+        print("  4. Default built-in configuration")
         exit(0)
     }
 }
 
 let g710plus = G710plus.singleton
+
+// Initialize configuration manager early to ensure proper config loading
+_ = ConfigurationManager.shared
+
 let daemon = Thread(target: g710plus, selector: #selector(G710plus.run), object: nil)
 
 daemon.start()

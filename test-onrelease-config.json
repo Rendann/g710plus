@@ -1,0 +1,47 @@
+{
+  "g1": {
+    "keys": [
+      {"key": "a", "modifiers": []}
+    ]
+  },
+  "g2": {
+    "keys": [
+      {"key": "b", "modifiers": []}
+    ],
+    "onRelease": [
+      {"key": "c", "modifiers": []}
+    ]
+  },
+  "g3": {
+    "keys": [
+      {"key": "d", "modifiers": []},
+      {"key": "e", "modifiers": []}
+    ],
+    "onRelease": [
+      {"key": "f", "modifiers": []},
+      {"key": "g", "modifiers": []}
+    ]
+  },
+  "g4": {
+    "keys": [
+      {"key": "F6", "modifiers": []},
+      {"key": "F18", "modifiers": []}
+    ],
+    "onRelease": [
+      {"key": "F6", "modifiers": []}
+    ]
+  },
+  "g5": {
+    "keys": [
+      {"key": "Space", "modifiers": ["command"]}
+    ],
+    "onRelease": [
+      {"key": "Escape", "modifiers": []}
+    ]
+  },
+  "g6": {
+    "keys": [
+      {"key": "F17", "modifiers": []}
+    ]
+  }
+}

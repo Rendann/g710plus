@@ -20,10 +20,11 @@ cd "$(dirname "$0")/g710plus/g710plus"
 mkdir -p "G710Plus.app/Contents/MacOS"
 mkdir -p "G710Plus.app/Contents/Resources"
 
-# Copy Info.plist and icon from source templates
+# Copy Info.plist, icon, and configuration file from source templates
 echo "Copying app bundle resources..."
 cp "AppBundle/Info.plist" "G710Plus.app/Contents/Info.plist"
 cp "AppBundle/AppIcon.icns" "G710Plus.app/Contents/Resources/AppIcon.icns"
+cp "g710plus-config.json" "G710Plus.app/Contents/Resources/g710plus-config.json"
 
 # Build the executable and place it in the app bundle
 echo "Compiling Swift sources..."

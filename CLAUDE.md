@@ -4,44 +4,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build and Test Commands
 
-### Building the macOS App Bundle (Recommended)
+### Building the Application
 ```bash
-# Build G710Plus.app bundle (runs silently without terminal window)
+# Build G710Plus.app bundle (production)
 ./build-app.sh
 
-# Build debug version with verbose logging enabled
+# Build debug version with verbose logging
 ./build-app-debug.sh
 
-# Install to Applications folder
-cp -r g710plus/g710plus/G710Plus.app /Applications/
-
-# Add to Login Items in System Preferences > Users & Groups > Login Items
-# The app will start automatically on login without showing terminal windows
+# Build command-line executable
+cd g710plus/g710plus && swiftc -o g710plus Classes/*.swift -framework IOKit -framework CoreGraphics -framework Foundation
 ```
 
-**Build Script Features:**
-- Automatic code signing with Apple Development certificate
-- Creates proper app bundle structure with Info.plist
-- Standard build: Info-level logging only
-- Debug build: Enables verbose debug logging via `VERBOSE_LOGGING` flag
-
-### Building Command-Line Executable (Alternative)
+### Testing Commands
 ```bash
-cd g710plus/g710plus
-swiftc -o g710plus Classes/*.swift -framework IOKit -framework CoreGraphics -framework Foundation
-```
+# Test configuration loading
+./G710Plus.app/Contents/MacOS/G710Plus --config /path/to/test-config.json --verbose
 
-### Testing
-```bash
-# Test app bundle (silent background operation)
-open G710Plus.app
+# Monitor configuration logs
+log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug | grep -i config
 
-# Test command-line version with verbose logging
-./g710plus --verbose
-
-# Install command-line version to system location
-sudo cp g710plus /usr/local/bin/g710plus
-/usr/local/bin/g710plus --verbose
+# Test invalid configurations (validates error handling)
+./G710Plus.app/Contents/MacOS/G710Plus --config invalid-config.json --verbose
 ```
 
 ## Architecture
@@ -57,7 +41,7 @@ This is a macOS utility that enables Logitech G710+ gaming keyboard G-keys witho
 ### Key Event Processing
 - Monitors raw HID reports from the keyboard for G-key and M-key events
 - Tracks key press/release state for each G-key (G1-G6) to enable proper hold/release functionality
-- Translates G-key events into macOS virtual key events (F13-F18)
+- Translates G-key events into configurable macOS virtual key events via JSON configuration system
 - Uses CoreGraphics framework to inject virtual key events into the system
 
 ### USB Protocol Implementation
@@ -71,18 +55,39 @@ The utility sends specific control transfers to configure the keyboard:
 - **Device Management**: Handles IOHIDManager setup, device matching, and connection callbacks
 - **Event Processing**: Processes raw HID reports and maintains key state
 - **Control Operations**: Sends USB control transfers for keyboard configuration
-- **Key Mapping**: 
+- **Configurable Key Mapping**: Uses `ConfigurationManager` to load custom key mappings from JSON files
+- **Default Key Mappings** (when no custom config):
   - G1 → Control+Command+Shift+L
   - G2 → Control+Command+Shift+K
   - G3 → Control+Command+Shift+J
   - G4 → F16, G5 → F17, G6 → F18
 
 ### `KeyCode` Enum
-- Defines CGKeyCode values for F13-F18 function keys and L/K/J letter keys used for G-key mapping
+- Defines CGKeyCode values for comprehensive keyboard mapping:
+  - Letters A-Z, Numbers 0-9, Function keys F1-F18
+  - Special keys (Space, Enter, Tab, Escape, Backspace, Delete)
+  - Arrow keys, Punctuation, Keypad keys
 - Based on macOS Carbon framework key codes
+- Supports dynamic character-to-KeyCode mapping system
+
+### `GKeyConfiguration` System (`GKeyConfig.swift`)
+- **`GKeyConfiguration`**: Codable struct defining mappings for all 6 G-keys
+- **`KeyMapping`**: Individual key configuration with character and modifier support
+- **`ConfigurationManager`**: Singleton that loads and manages configuration from multiple sources:
+  - Command-line `--config` argument path
+  - App bundle: `g710plus-config.json`
+  - Home directory: `~/.g710plus-config.json`
+  - Built-in defaults as fallback
+- **Character-to-KeyCode Mapping**: Dynamic system supporting:
+  - Lowercase letters: `"k"` → types 'k'
+  - Explicit shift modifiers: `"k"` + `["shift"]` → types 'K'
+  - Special keys: `"Space"`, `"Enter"`, `"ArrowUp"`, `"F13"`, etc.
+  - Modifier validation: `control/ctrl`, `command/cmd`, `shift`, `option/alt`
 
 ### `main.swift`
 - Entry point that creates the singleton instance and starts the daemon thread
+- Initializes `ConfigurationManager` early to ensure proper config loading
+- Handles command-line arguments including `--config`, `--verbose`, `--version`, `--help`
 - Runs the main event loop to keep the utility active
 
 ## Key Event Handling
@@ -92,110 +97,107 @@ The keyboard sends specific 32-bit codes for different events:
 - **G-key presses**: 0x103 (G1), 0x203 (G2), 0x403 (G3), 0x803 (G4), 0x1003 (G5), 0x2003 (G6)
 - **G-key releases**: 0x3 (any G-key release - requires state tracking to determine which key)
 
-## Installation Options
+## JSON Configuration System
 
-### Option 1: macOS App Bundle (Recommended)
-- **Advantage**: Runs silently in background without terminal windows
-- **Best for**: Users who want clean login item behavior
-- **Setup**: Build with `./build-app.sh`, copy to `/Applications/`, add to Login Items
+G-keys are fully customizable via JSON configuration files that define what keys/shortcuts each G-key sends.
 
-### Option 2: Command-Line Executable  
-- **Advantage**: Traditional Unix-style executable
-- **Best for**: Development, testing, or integration with other tools
-- **Note**: Shows terminal window when used as login item
+### Configuration File Format
+```json
+{
+  "g1": {"key": "k", "modifiers": []},
+  "g2": {"key": "k", "modifiers": ["shift"]},
+  "g3": {"key": "Space", "modifiers": ["command"]},
+  "g4": {"key": "F13", "modifiers": []},
+  "g5": {"key": "Enter", "modifiers": []},
+  "g6": {"key": "Escape", "modifiers": []}
+}
+```
 
-## Code Signing
+### Configuration Priority (checked in order)
+1. **Custom path**: `--config /path/to/config.json` command line argument
+2. **App bundle**: `G710Plus.app/Contents/Resources/g710plus-config.json` 
+3. **Home directory**: `~/.g710plus-config.json`
+4. **Built-in defaults**: Hardcoded fallback configuration
 
-The app bundle requires proper code signing to avoid TCC permission re-authorization after each rebuild. The `build-app.sh` script automatically handles this:
+### Supported Keys
+- **Letters**: `"k"` (lowercase only - use `["shift"]` for uppercase)
+- **Numbers**: `"0"` through `"9"`
+- **Function Keys**: `"F1"` through `"F18"`
+- **Special Keys**: `"Space"`, `"Enter"`, `"Tab"`, `"Escape"`, `"Backspace"`, `"Delete"`
+- **Arrow Keys**: `"ArrowUp"`, `"ArrowDown"`, `"ArrowLeft"`, `"ArrowRight"`
+- **Punctuation**: `";"`, `","`, `"."`, `"/"`, `"\\"`, `"'"`, `"["`, `"]"`, `"-"`, `"="`, `` "`" ``
+
+### Supported Modifiers
+- `"control"` or `"ctrl"` - Control key
+- `"command"` or `"cmd"` - Command key (⌘)
+- `"shift"` - Shift key  
+- `"option"` or `"alt"` - Option/Alt key
+
+### Important Configuration Rules
+- **No uppercase letters**: Use lowercase + explicit `["shift"]` modifier
+- **No auto-shift**: Shifted symbols like `"!"` not supported - use `"1"` + `["shift"]`
+- **Explicit modifiers**: All modifiers must be explicitly specified
+- **Restart required**: Configuration changes require app restart to take effect
+
+### Configuration Error Handling
+The system provides helpful error messages for invalid configurations:
+- Uppercase letters: `"ERROR - Uppercase letter 'K' not allowed for g2. Use 'k' with "shift" modifier instead."`
+- Invalid keys: `"ERROR - Invalid key configuration 'InvalidKey' for g1"`
+
+## Code Signing and Development Setup
 
 ### Automatic Code Signing
-- Build script detects your Apple Development certificate via `security find-identity`
-- Signs the app bundle with `codesign --force --sign "$SIGNING_IDENTITY" "G710Plus.app"`
-- Prevents TCC from treating each rebuild as a "new" application requiring re-authorization
+- Build script detects Apple Development certificate via `security find-identity`
+- Signs with `codesign --force --sign "$SIGNING_IDENTITY" "G710Plus.app"`
+- Prevents TCC permission re-authorization after rebuilds
 
-### Setting Up Development Certificate
-If you don't have an Apple Development certificate:
-1. Open Xcode and sign in with your Apple ID (Xcode > Preferences > Accounts)
-2. Select your team and ensure "Apple Development" certificate is available
-3. Alternatively: enable "Automatically manage signing" in the Xcode project settings
+### Development Certificate Setup
+Requires Xcode with Apple ID sign-in for Apple Development certificate.
 
-### Troubleshooting Code Signing
-- **Warning "No development certificate found"**: Install Xcode and sign in with Apple ID
-- **TCC permissions reset after rebuild**: Code signing failed or different certificate used
-- **Verify signing**: `codesign -dv --verbose=4 G710Plus.app`
+### TCC Permission Requirements
+- **Input Monitoring**: Required for G-key detection
+- **Accessibility**: May be required for virtual key injection
+- Code signing prevents permission reset on rebuild
 
-## Logging System
+## Development Guidelines
 
-The utility uses macOS unified logging (`os_log`) for robust logging that integrates with Console.app:
+### Swift Coding Standards
+- Use singleton pattern for `G710plus` and `ConfigurationManager` classes
+- Implement proper error handling with helpful user messages
+- Follow Apple's logging best practices with `os_log`
+- Use `Codable` for JSON configuration parsing
+- Maintain explicit key state tracking for press/release events
 
-### Log Levels
-- **Info Level**: Essential operational messages (device connection, errors)
-- **Debug Level**: Detailed diagnostic information (only when `--verbose` flag is used)
-
-### Viewing Logs
-**Console.app Method:**
-1. Open Console.app (Applications > Utilities)
-2. Filter by process name: "g710plus" or "G710Plus"
-3. Use predicate: `subsystem == "com.halo.g710plus"`
-
-**Command Line Method:**
+### Configuration System Testing
 ```bash
-# View all g710plus logs
-log show --predicate 'subsystem == "com.halo.g710plus"' --info --debug --last 1h
+# Test configuration priority loading
+./G710Plus.app/Contents/MacOS/G710Plus --config /path/to/test-config.json --verbose
 
-# Follow live logs
-log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug
+# Validate error handling for invalid configs
+./G710Plus.app/Contents/MacOS/G710Plus --config invalid-config.json --verbose
+
+# Monitor configuration loading via logs
+log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug | grep -i config
 ```
 
-### Build-Time Logging Configuration
-- **Standard Build**: Info-level messages only
-- **Debug Build** (`./build-app-debug.sh`): Enables verbose debug logging via `VERBOSE_LOGGING` compilation flag
+### Testing Conventions
+- Test configuration priority: custom → bundle → home → defaults
+- Validate lowercase vs explicit shift modifier behavior
+- Verify error messages for uppercase letters and invalid keys
+- Ensure configuration changes require app restart
+- Test HID device connection/disconnection scenarios
+
+### Memory Management
+- Proper cleanup on device disconnection
+- Early initialization of `ConfigurationManager` to prevent loading issues
+- State tracking for G-key press/release events
 
 ### Logging Implementation
-The utility implements two main logging functions:
-- `logInfo(_:)`: Always logs important operational messages
-- `logDebug(_:)`: Conditional logging based on `VERBOSE_LOGGING` flag
+- `logInfo(_:)`: Essential operational messages (always enabled)
+- `logDebug(_:)`: Diagnostic information (requires `VERBOSE_LOGGING` flag)
+- Expected control transfer failures (-536850432) during connection are normal
 
-**Expected Messages:** Control transfer failures (-536850432) during device connection are normal and do not impact G-key functionality.
-
-## TCC Permissions
-
-macOS Transparency, Consent, and Control (TCC) system requires explicit permission grants for HID device access:
-
-### Required Permissions
-**Input Monitoring**: Required for detecting G-key presses
-- Location: System Settings > Privacy & Security > Input Monitoring
-- Enable: G710Plus.app (or g710plus if using command-line version)
-
-**Accessibility** (if prompted): May be required for virtual key event injection
-- Location: System Settings > Privacy & Security > Accessibility  
-- Enable: G710Plus.app when prompted
-
-### Permission Process
-1. **First Launch**: macOS prompts for Input Monitoring permission
-2. **Grant Permission**: Check the box next to G710Plus in System Settings
-3. **Restart App**: Quit and relaunch for permissions to take effect
-4. **Additional Prompts**: Grant Accessibility permission if requested
-
-### Permission Descriptions (Info.plist)
-The app bundle includes user-friendly permission descriptions:
-```xml
-<key>NSInputMonitoringUsageDescription</key>
-<string>G710Plus needs to monitor keyboard input to detect G-key presses on your Logitech G710+ keyboard and map them to function keys.</string>
-```
-
-### Troubleshooting TCC Issues
-- **G-keys output numbers instead of F13-F18**: Input Monitoring permission not granted
-- **No G-key response at all**: App not running or HID device access denied
-- **Permissions reset after rebuild**: Code signing issue (see Code Signing section)
-- **Manual permission reset**: Remove app from TCC settings, rebuild, re-authorize
-
-## Development Notes
-
-- The utility must run with appropriate permissions to access HID devices
-- Verbose logging is available via `--verbose` command line argument
-- Device state is maintained for proper key press/release event handling
-- Error handling includes retry logic for initial device connection
-- Memory management includes proper cleanup on device disconnection
-- Remember to update the build number in the code when applicable
-- App bundle uses `LSUIElement=true` to run without dock icon or menu bar presence
+### Build Configuration
+- Standard build: Info-level logging only
+- Debug build: Enables `VERBOSE_LOGGING` compilation flag
+- App bundle uses `LSUIElement=true` for background operation

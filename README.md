@@ -19,7 +19,7 @@ Digging in deeper, you might find out that [someone reverse engineered](https://
 This is a simple command line application written in Swift that communicates directly via USB with your keyboard and does the following:
 
 * Disables G-key mirroring (G-keys normally mirror number keys 1-6)
-* Maps G-keys to system shortcuts and function keys with hold/release functionality:
+* Maps G-keys to customizable shortcuts via JSON configuration (default mappings):
   - G1 → Control+Command+Shift+L
   - G2 → Control+Command+Shift+K  
   - G3 → Control+Command+Shift+J
@@ -103,6 +103,44 @@ On first run, macOS will prompt for security permissions:
 
 **Important:** Restart the app after granting permissions for them to take effect.
 
+### Configuration
+
+G-key shortcuts are fully customizable via JSON configuration files. Create `~/.g710plus-config.json` to override defaults:
+
+```json
+{
+  "g1": {"key": "k", "modifiers": []},
+  "g2": {"key": "k", "modifiers": ["shift"]},
+  "g3": {"key": "Space", "modifiers": ["command"]},
+  "g4": {"key": "F13", "modifiers": []},
+  "g5": {"key": "Enter", "modifiers": []},
+  "g6": {"key": "Escape", "modifiers": []}
+}
+```
+
+**Key Examples:**
+- Letters: `"k"` (lowercase only - use `["shift"]` modifier for uppercase)
+- Special: `"Space"`, `"Enter"`, `"Tab"`, `"Escape"`, `"Backspace"`
+- Function: `"F1"` through `"F18"`
+- Arrows: `"ArrowUp"`, `"ArrowDown"`, `"ArrowLeft"`, `"ArrowRight"`
+- Punctuation: `";"` (use `["shift"]` for `":"`), `","`, `"."`, `"1"` (use `["shift"]` for `"!"`), etc.
+
+**Supported Modifiers:**
+- `"control"` or `"ctrl"` - Control key
+- `"command"` or `"cmd"` - Command key (⌘)
+- `"shift"` - Shift key
+- `"option"` or `"alt"` - Option/Alt key
+
+**Modifier Examples:**
+- `{"key": "k", "modifiers": []}` → k
+- `{"key": "k", "modifiers": ["shift"]}` → K
+- `{"key": "k", "modifiers": ["command"]}` → ⌘K
+- `{"key": "k", "modifiers": ["control", "shift"]}` → ⌃⇧K
+
+**Note:** Uppercase letters (A-Z) are not allowed in key names. Use lowercase letters with explicit `"shift"` modifier instead.
+
+Restart the app after changing configuration.
+
 ### Automatic Startup
 
 #### Option 1: App Bundle (Recommended)
@@ -157,8 +195,8 @@ log stream --predicate 'subsystem == "com.halo.g710plus"' --info --debug
 
 #### When Working Properly
 - M1 light should be illuminated on the keyboard
-- G1-G3 keys trigger Control+Command+Shift+L/K/J combinations (not numbers 1-3)
-- G4-G6 keys trigger F16-F18 function keys (not numbers 4-6)
+- G-keys trigger configured shortcuts (default: G1-G3→Control+Command+Shift+L/K/J, G4-G6→F16-F18)
+- Keys send configured outputs instead of numbers 1-6
 - No terminal windows visible (for app bundle)
 - Logs show "G710+ keyboard connected" in Console.app
 

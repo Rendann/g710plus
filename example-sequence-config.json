@@ -1,0 +1,45 @@
+{
+  "g1": {
+    "keys": [
+      {"key": "l", "modifiers": ["control", "command", "shift"]}
+    ]
+  },
+  "g2": {
+    "keys": [
+      {"key": "h", "modifiers": ["command"]},
+      {"key": "i", "modifiers": ["shift"]}
+    ]
+  },
+  "g3": {
+    "keys": [
+      {"key": "Escape", "modifiers": []},
+      {"key": "Tab", "modifiers": []},
+      {"key": "Enter", "modifiers": []}
+    ]
+  },
+  "g4": {
+    "keys": [
+      {"key": "F6", "modifiers": []},
+      {"key": "F18", "modifiers": []}
+    ],
+    "onRelease": [
+      {"key": "F6", "modifiers": []}
+    ]
+  },
+  "g5": {
+    "keys": [
+      {"key": "1", "modifiers": ["command"]},
+      {"key": "2", "modifiers": ["command"]},
+      {"key": "3", "modifiers": ["command"]}
+    ]
+  },
+  "g6": {
+    "keys": [
+      {"key": "Space", "modifiers": ["command"]}
+    ],
+    "onRelease": [
+      {"key": "Escape", "modifiers": []},
+      {"key": "Tab", "modifiers": []}
+    ]
+  }
+}
